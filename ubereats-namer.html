@@ -83,7 +83,7 @@ details.more summary{cursor:pointer;color:var(--sub);font-size:14px}
 <div class="wrap">
   <header>
     <h1>Uber Eats 店名產生器</h1>
-    <p>為外送店面取全新品牌，搭配商品副標。選擇料理類型，產出可直接複製的「品牌丨主打・代表品項」。</p>
+    <p>為外送店面取全新品牌，搭配商品副標。選擇料理類型，產出可直接複製的「品牌丨主打 代表品項」。</p>
   </header>
 
   <div class="grid">
@@ -215,7 +215,7 @@ details.more summary{cursor:pointer;color:var(--sub);font-size:14px}
           <ul>
             <li>預設建立新外送品牌。原店名只供避名，不沿用、縮寫或改一個字。</li>
             <li>固定交付品牌名、商品副標、完整上架店名；五案依推薦程度排列，不硬湊固定模板。</li>
-            <li>用「品牌丨主打・代表品項」呈現。副標放主打及 1–2 個真實商品詞；只有單一商品時不硬湊。品牌可搭配短英文。</li>
+            <li>用「品牌丨主打 代表品項」呈現，只保留一個「丨」，其他標點與裝飾符號不使用。副標商品詞以空格分開，放主打及 1–2 個真實商品詞；只有單一商品時不硬湊。品牌可搭配短英文。</li>
             <li>中文、中英混合都以精簡可讀為準。列表示意僅供比較，實際顯示依裝置與平台版位而異。</li>
             <li>料理類型引導語氣，不能取代真實販售品項，也不代表正宗、產地或認證。未入選副標的品項留給簡介或菜單。</li>
           </ul>
@@ -259,6 +259,7 @@ details.more summary{cursor:pointer;color:var(--sub);font-size:14px}
 
   const splitItems = s => s.split(/[、,，\/\n;；\s]+/).map(t=>t.trim()).filter(Boolean);
   const findCat = text => ["炒飯","蔥油餅","粥",...CATS].find(c => text.includes(c));
+  const plainNamePart = text => text.replace(/[丨]|[^\p{L}\p{M}\p{N} ]/gu, " ").replace(/ +/g, " ").trim();
   const len = s => [...s.replace(/\s/g,"")].length;
 
   function localCheck(name){
@@ -272,9 +273,9 @@ details.more summary{cursor:pointer;color:var(--sub);font-size:14px}
 
   function localGenerate(d){
     const items = splitItems(d.items);
-    const primary = findCat(d.hero) || findCat(d.items) || items[0] || d.hero;
-    const second = items.map(i => findCat(i) || i).find(c => c && c !== primary && !primary.includes(c) && !c.includes(primary)) || "";
-    const subtitle = [primary, second].filter(Boolean).join("・");
+    const primary = plainNamePart(findCat(d.hero) || findCat(d.items) || items[0] || d.hero);
+    const second = items.map(i => plainNamePart(findCat(i) || i)).find(c => c && c !== primary && !primary.includes(c) && !c.includes(primary)) || "";
+    const subtitle = [primary, second].filter(Boolean).join(" ");
     const g = group(primary);
     const excluded = [d.orig, ...splitItems(d.avoid)].filter(Boolean);
     const stems = BRAND_IDEAS[g].filter(brand => !excluded.some(word => brand.includes(word) || word.includes(brand)));
@@ -398,7 +399,9 @@ details.more summary{cursor:pointer;color:var(--sub);font-size:14px}
   }
   function valid(res){
     return res && Array.isArray(res.names) && res.names.length === 5 && res.names.every(n => n &&
-      ["name", "brand", "subtitle"].every(key => typeof n[key] === "string" && n[key].trim()) && n.name === n.brand + "丨" + n.subtitle);
+      ["name", "brand", "subtitle"].every(key => typeof n[key] === "string" && n[key].trim()) &&
+      n.name === n.brand + "丨" + n.subtitle && !/[丨]/.test(n.brand + n.subtitle) &&
+      !/[^\p{L}\p{M}\p{N} 丨]/u.test(n.name));
   }
 
   async function run(){
