@@ -26,6 +26,7 @@
   --accent:#8C90FF; --accent-ink:#12161C; --mark:#6B5510; --warn:#F0A06A; --ok:#6FD3A0; --field:#151A21;
 }
 *,*::before,*::after{box-sizing:inherit}
+[hidden]{display:none!important}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;font-size:16px;line-height:1.6}
 .wrap{max-width:1120px;margin:0 auto;padding:28px 20px 48px}
@@ -56,6 +57,7 @@ details.more summary{cursor:pointer;color:var(--sub);font-size:14px}
 .kw b{color:var(--ink);font-weight:700}
 .card{border:1px solid var(--line);border-radius:12px;padding:16px 16px 14px;margin-bottom:14px;background:var(--panel)}
 .card-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.card-top>div{min-width:0}
 .dir{font-size:13px;color:var(--accent);font-weight:700}
 .name{font-size:clamp(22px,3vw,28px);font-weight:900;line-height:1.3;margin:2px 0 8px;overflow-wrap:anywhere}
 .name mark{background:var(--mark);color:inherit;padding:0 2px;border-radius:3px}
@@ -66,7 +68,7 @@ details.more summary{cursor:pointer;color:var(--sub);font-size:14px}
 .phone{width:15.5em;max-width:100%;background:var(--field);border:1px solid var(--line);border-radius:6px;padding:4px 8px;font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .meta{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:14px}
 .meta dt{color:var(--sub)}
-.meta dd{margin:0}
+.meta dd{margin:0;min-width:0;overflow-wrap:anywhere}
 .risk{color:var(--warn)}
 .risk.none{color:var(--ok)}
 .rules{margin-top:24px}
@@ -81,7 +83,7 @@ details.more summary{cursor:pointer;color:var(--sub);font-size:14px}
 <div class="wrap">
   <header>
     <h1>Uber Eats 店名產生器</h1>
-    <p>為外送店面取全新品牌名。好唸、有記憶點，也讓人看懂賣什麼；可搭配英文與「丨」。</p>
+    <p>為外送店面取全新品牌，搭配商品副標。選擇料理類型，產出可直接複製的「品牌丨主打・代表品項」。</p>
   </header>
 
   <div class="grid">
@@ -93,6 +95,34 @@ details.more summary{cursor:pointer;color:var(--sub);font-size:14px}
             <option value="new">全新外送品牌（與實體店不同）</option>
             <option value="extend">延伸原品牌（少數情況）</option>
           </select>
+        </div>
+        <div class="field">
+          <label for="cuisine">餐廳料理類型 <small>選填，不會自動新增餐點</small></label>
+          <select id="cuisine" aria-controls="cuisineCustomField">
+            <option value="">未指定，依販售品項判斷</option>
+            <option>台式／台灣小吃</option>
+            <option>中式料理</option>
+            <option>日式料理</option>
+            <option>韓式料理</option>
+            <option>泰式料理</option>
+            <option>越式料理</option>
+            <option>港式料理</option>
+            <option>美式料理</option>
+            <option>義式料理</option>
+            <option>法式料理</option>
+            <option>印度料理</option>
+            <option>南洋料理</option>
+            <option>異國融合料理</option>
+            <option>素食／蔬食</option>
+            <option>早餐／早午餐</option>
+            <option>咖啡／甜點／烘焙</option>
+            <option>飲料／冰品</option>
+            <option value="custom">其他／自行填寫</option>
+          </select>
+        </div>
+        <div class="field" id="cuisineCustomField" hidden>
+          <label for="cuisineCustom">自訂料理類型</label>
+          <input id="cuisineCustom" maxlength="300" disabled placeholder="例：台日融合、墨西哥料理">
         </div>
         <div class="field">
           <label for="items">販售品項 <small>用頓號或逗號分隔</small></label>
@@ -167,7 +197,7 @@ details.more summary{cursor:pointer;color:var(--sub);font-size:14px}
         </div>
         <div id="kw" class="kw" hidden></div>
         <div id="out"><div class="empty">填寫販售品項與主打商品，開始構思新品牌。原店名不必填。</div></div>
-        <p class="note">提案未查核重名與商標；定案前請在 App 內搜尋，並查核商工登記與 TIPO 商標。</p>
+        <p class="note">「複製」會複製品牌與副標組成的完整上架店名。提案未查核重名與商標；定案前請在 App 內搜尋，並查核商工登記與 TIPO 商標。</p>
       </div>
 
       <div class="panel rules">
@@ -184,10 +214,10 @@ details.more summary{cursor:pointer;color:var(--sub);font-size:14px}
           <summary>參考的取名規則（台灣外送常見結構）</summary>
           <ul>
             <li>預設建立新外送品牌。原店名只供避名，不沿用、縮寫或改一個字。</li>
-            <li>先有自然好唸的品牌記憶點，再搭配一個核心中文品類；五案依推薦程度排列，不硬湊固定模板。</li>
-            <li>可用一個「丨」分隔品牌與品類，也可加入 1–2 個好唸的英文單字；不為了造型硬加。</li>
+            <li>固定交付品牌名、商品副標、完整上架店名；五案依推薦程度排列，不硬湊固定模板。</li>
+            <li>用「品牌丨主打・代表品項」呈現。副標放主打及 1–2 個真實商品詞；只有單一商品時不硬湊。品牌可搭配短英文。</li>
             <li>中文、中英混合都以精簡可讀為準。列表示意僅供比較，實際顯示依裝置與平台版位而異。</li>
-            <li>其餘品項與長尾詞留給簡介或菜單，不把整份菜單串成店名。</li>
+            <li>料理類型引導語氣，不能取代真實販售品項，也不代表正宗、產地或認證。未入選副標的品項留給簡介或菜單。</li>
           </ul>
         </details>
         <details>
@@ -244,11 +274,12 @@ details.more summary{cursor:pointer;color:var(--sub);font-size:14px}
     const items = splitItems(d.items);
     const primary = findCat(d.hero) || findCat(d.items) || items[0] || d.hero;
     const second = items.map(i => findCat(i) || i).find(c => c && c !== primary && !primary.includes(c) && !c.includes(primary)) || "";
+    const subtitle = [primary, second].filter(Boolean).join("・");
     const g = group(primary);
     const excluded = [d.orig, ...splitItems(d.avoid)].filter(Boolean);
     const stems = BRAND_IDEAS[g].filter(brand => !excluded.some(word => brand.includes(word) || word.includes(brand)));
     const names = stems.map((_, i) => stems[(i + round) % stems.length]).slice(0,5).map(brand => ({
-      direction:"規則草稿", brand, name:brand + "丨" + primary, keywords:[primary],
+      direction:"規則草稿", brand, subtitle, name:brand + "丨" + subtitle, keywords:[primary, second].filter(Boolean),
       reason:"僅作發想起點，尚未經 AI 比較篩選。"
     }));
     return {
@@ -277,7 +308,7 @@ details.more summary{cursor:pointer;color:var(--sub);font-size:14px}
     kwEl.hidden = false;
     kwEl.innerHTML =
       `<span><b>主關鍵字</b> ${esc((k.primary||[]).join("、")||"—")}</span>` +
-      `<span><b>次關鍵字</b> ${esc((k.secondary||[]).join("、")||"—")}</span>` +
+      `<span><b>副標候選詞</b> ${esc((k.secondary||[]).join("、")||"—")}</span>` +
       `<span><b>放菜單</b> ${esc((k.longtail||[]).join("、")||"—")}</span>`;
     out.innerHTML = "";
     res.names.slice(0,5).forEach((n, i) => {
@@ -289,12 +320,15 @@ details.more summary{cursor:pointer;color:var(--sub);font-size:14px}
         <div class="card-top">
           <div>
             <div class="dir">${i+1}. ${esc(n.direction)}</div>
+            <div class="note">完整上架店名</div>
             <div class="name">${highlight(n.name, n.keywords)}</div>
           </div>
           <button class="btn copy" type="button" data-i="${i}" aria-label="複製 ${esc(n.name)}">複製</button>
         </div>
         <div class="preview"><span class="lbl">列表示意</span><div class="phone">${esc(n.name)}</div></div>
         <dl class="meta">
+          <dt>品牌名</dt><dd>${esc(n.brand)}</dd>
+          <dt>商品副標</dt><dd>${esc(n.subtitle)}</dd>
           <dt>字元數</dt><dd>${len(n.name)}（不含空白，含英文字母與分隔符）</dd>
           <dt>命名邏輯</dt><dd>${esc(n.reason)}</dd>
           ${n.intro ? `<dt>店家簡介</dt><dd>${esc(n.intro)}</dd>` : ""}
@@ -358,15 +392,18 @@ details.more summary{cursor:pointer;color:var(--sub);font-size:14px}
   };
   function readForm(){
     return { orig:$("orig").value.trim(), items:$("items").value.trim(), hero:$("hero").value.trim(),
+             cuisine:$("cuisine").value === "custom" ? $("cuisineCustom").value.trim() : $("cuisine").value,
              price:$("price").value, area:$("area").value.trim(), type:$("type").value, avoid:$("avoid").value.trim(),
              namingMode:$("namingMode").value, language:$("language").value, style:$("style").value.trim(), features:$("features").value.trim() };
   }
   function valid(res){
-    return res && Array.isArray(res.names) && res.names.length >= 5 && res.names.every(n => n && typeof n.name === "string" && n.name.trim());
+    return res && Array.isArray(res.names) && res.names.length === 5 && res.names.every(n => n &&
+      ["name", "brand", "subtitle"].every(key => typeof n[key] === "string" && n[key].trim()) && n.name === n.brand + "丨" + n.subtitle);
   }
 
   async function run(){
     const d = readForm();
+    if ($("cuisine").value === "custom" && !d.cuisine){ statusEl.textContent = "請填寫自訂料理類型，或選擇未指定。"; return; }
     if (!d.items || !d.hero || (d.namingMode === "extend" && !d.orig)){ statusEl.textContent = "請填販售品項與主打商品；延伸原品牌時才需填原店名。"; return; }
     const inputKey = JSON.stringify(d);
     if(inputKey !== lastInput){ history = []; round = 0; lastInput = inputKey; }
@@ -403,6 +440,13 @@ details.more summary{cursor:pointer;color:var(--sub);font-size:14px}
   form.addEventListener("submit", e => { e.preventDefault(); run(); });
   againBtn.addEventListener("click", () => { round++; run(); });
   stopBtn.addEventListener("click", () => ctl?.abort());
+
+  $("cuisine").addEventListener("change", () => {
+    const custom = $("cuisine").value === "custom";
+    $("cuisineCustomField").hidden = !custom;
+    $("cuisineCustom").disabled = !custom;
+    $("cuisineCustom").required = custom;
+  });
 
   $("namingMode").addEventListener("change", () => {
     const extend = $("namingMode").value === "extend";
