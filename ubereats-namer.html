@@ -57,7 +57,7 @@ details.more summary{cursor:pointer;color:var(--sub);font-size:14px}
 .card{border:1px solid var(--line);border-radius:12px;padding:16px 16px 14px;margin-bottom:14px;background:var(--panel)}
 .card-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
 .dir{font-size:13px;color:var(--accent);font-weight:700}
-.name{font-size:clamp(22px,3vw,28px);font-weight:900;line-height:1.3;margin:2px 0 8px;word-break:break-all}
+.name{font-size:clamp(22px,3vw,28px);font-weight:900;line-height:1.3;margin:2px 0 8px;overflow-wrap:anywhere}
 .name mark{background:var(--mark);color:inherit;padding:0 2px;border-radius:3px}
 .copy{flex:none}
 .copy.done{color:var(--ok);border-color:var(--ok)}
@@ -81,15 +81,18 @@ details.more summary{cursor:pointer;color:var(--sub);font-size:14px}
 <div class="wrap">
   <header>
     <h1>Uber Eats 店名產生器</h1>
-    <p>輸入店家資料，產出 5 個以「搜尋找得到、列表會想點」為優先的平台店名。</p>
+    <p>為外送店面取全新品牌名。好唸、有記憶點，也讓人看懂賣什麼；可搭配英文與「丨」。</p>
   </header>
 
   <div class="grid">
     <form id="f" autocomplete="off">
       <div class="panel">
         <div class="field">
-          <label for="orig">原店名</label>
-          <input id="orig" required placeholder="例：阿明小吃">
+          <label for="namingMode">命名方式</label>
+          <select id="namingMode">
+            <option value="new">全新外送品牌（與實體店不同）</option>
+            <option value="extend">延伸原品牌（少數情況）</option>
+          </select>
         </div>
         <div class="field">
           <label for="items">販售品項 <small>用頓號或逗號分隔</small></label>
@@ -99,9 +102,28 @@ details.more summary{cursor:pointer;color:var(--sub);font-size:14px}
           <label for="hero">主打商品</label>
           <input id="hero" required placeholder="例：現炸無骨雞排">
         </div>
+        <div class="field">
+          <label for="features">真實特色 <small>選填，請只填確實有的</small></label>
+          <input id="features" maxlength="300" placeholder="例：蒜香口味、雞排去骨、能選辣度">
+        </div>
         <details class="more">
           <summary>補充條件（選填，能讓店名更精準）</summary>
           <div class="field" style="margin-top:12px">
+            <label for="orig">實體店原名 <small id="origHint">選填，只用來避開相似名字</small></label>
+            <input id="orig" maxlength="300" placeholder="不填也可以產生新品牌">
+          </div>
+          <div class="field">
+            <label for="style">希望的品牌感</label>
+            <input id="style" maxlength="300" placeholder="例：俐落有個性、台味親切；不要文青感">
+          </div>
+          <div class="field">
+            <label for="language">品牌語言</label>
+            <select id="language">
+              <option value="mixed">中文為主，也可搭配好唸的英文</option>
+              <option value="zh">只要中文</option>
+            </select>
+          </div>
+          <div class="field">
             <label for="price">客單價帶</label>
             <select id="price">
               <option value="">未指定</option>
@@ -118,7 +140,7 @@ details.more summary{cursor:pointer;color:var(--sub);font-size:14px}
           <div class="field">
             <label for="type">店家狀態</label>
             <select id="type">
-              <option value="既有實體店">既有實體店（延伸原名）</option>
+              <option value="既有實體店另取外送品牌">實體店另取外送品牌</option>
               <option value="新開外送店">新開外送店</option>
               <option value="虛擬品牌／同址副牌">虛擬品牌／同址副牌</option>
             </select>
@@ -144,7 +166,8 @@ details.more summary{cursor:pointer;color:var(--sub);font-size:14px}
           <button class="btn" id="copyAll" type="button" disabled>複製全部</button>
         </div>
         <div id="kw" class="kw" hidden></div>
-        <div id="out"><div class="empty">填好左邊三個欄位，按「產生 5 個店名」。</div></div>
+        <div id="out"><div class="empty">填寫販售品項與主打商品，開始構思新品牌。原店名不必填。</div></div>
+        <p class="note">提案未查核重名與商標；定案前請在 App 內搜尋，並查核商工登記與 TIPO 商標。</p>
       </div>
 
       <div class="panel rules">
@@ -160,11 +183,11 @@ details.more summary{cursor:pointer;color:var(--sub);font-size:14px}
         <details>
           <summary>參考的取名規則（台灣外送常見結構）</summary>
           <ul>
-            <li>骨架＝品類關鍵字＋一個記憶元件。記憶元件擇一：人格（阿明、老王）、做法規格（現炸、厚切、大盛）、地名場景（公館、深夜）、意象詞（小火、一鍋）、數字（三兄弟、九號）。</li>
-            <li>一般排「記憶元件＋品類詞」；冷門或需教育市場的品類（舒肥、韓式炸醬）品類詞提前。</li>
-            <li>中文 6–12 字為主，超過 14 字視為會被截斷。</li>
-            <li>既有店家改名優先用「原名＋品類詞」，保住既有回購辨識。</li>
-            <li>長尾字（起司雞排、雙人餐、小辣）放菜單品項名，不要擠店名。</li>
+            <li>預設建立新外送品牌。原店名只供避名，不沿用、縮寫或改一個字。</li>
+            <li>先有自然好唸的品牌記憶點，再搭配一個核心中文品類；五案依推薦程度排列，不硬湊固定模板。</li>
+            <li>可用一個「丨」分隔品牌與品類，也可加入 1–2 個好唸的英文單字；不為了造型硬加。</li>
+            <li>中文、中英混合都以精簡可讀為準。列表示意僅供比較，實際顯示依裝置與平台版位而異。</li>
+            <li>其餘品項與長尾詞留給簡介或菜單，不把整份菜單串成店名。</li>
           </ul>
         </details>
         <details>
@@ -172,7 +195,7 @@ details.more summary{cursor:pointer;color:var(--sub);font-size:14px}
           <ul>
             <li>不用「第一、最強、最好吃、冠軍、保證、必吃」等誇大用語。</li>
             <li>不蹭知名品牌（含諧音、加字）。</li>
-            <li>不堆疊品類詞、不連用 ★｜＆ 等符號。</li>
+            <li>不堆疊品類或裝飾符號；不捏造人名、傳承、手工、產地等未提供的事實。</li>
             <li>虛擬品牌／同址多品牌：菜單與定位要真的不同，平台曾大量下架重複的虛擬品牌；實際門檻以平台窗口說法為準。</li>
             <li>定案前在 App 內搜尋同名，並查經濟部商工登記與 TIPO 商標。</li>
           </ul>
@@ -189,27 +212,31 @@ details.more summary{cursor:pointer;color:var(--sub);font-size:14px}
         copyAllBtn = $("copyAll"), statusEl = $("status"), out = $("out"), kwEl = $("kw");
   // ▼ 部署 Worker 後，把網址貼在這裡（例：https://ubereats-namer.xxx.workers.dev）
   const WORKER_URL = "https://ubereats-namer.helen12021202.workers.dev";
-  let sampleFn = null, ctl = null, current = null, round = 0;
+  let ctl = null, current = null, round = 0, history = [], lastInput = "";
 
   // ---------- 本地規則（AI 無法使用時的備援，也用來複檢 AI 結果） ----------
   const CATS = ["無骨雞排","鹽酥雞","鹹酥雞","雞排","炸雞","便當","飯盒","燴飯","咖哩飯","咖哩","丼飯","燒肉飯","雞腿飯","排骨飯","滷肉飯","油飯","拉麵","牛肉麵","烏龍麵","義大利麵","乾麵","麻醬麵","炒麵","涼麵","麵線","水餃","鍋貼","漢堡","薯條","火鍋","個人鍋","麻辣鍋","雞湯","早午餐","早餐","蛋餅","吐司","蘿蔔糕","貝果","三明治","鐵板麵","沙拉","健身餐","輕食","蔬食","素食","甜點","蛋糕","可麗餅","鬆餅","車輪餅","豆花","剉冰","布丁","手搖","鮮奶茶","水果茶","咖啡","果汁","熱炒","燒烤","串燒","滷味","鹽水雞","炊飯","小麵","麵"];
   const BANNED = ["第一","最強","最好吃","冠軍","保證","必吃","正宗","第1","No.1","NO.1","排毒","瘦身","抗癌"];
-  const MOD = {
-    fry:["現炸","酥脆","大塊"], rice:["大盛","現煮","家常"], noodle:["手工","慢燉","濃湯"],
-    drink:["現萃","鮮搖","手作"], sweet:["手作","現烤","日日"], other:["現做","職人","家常"]
+  const BRAND_IDEAS = {
+    fry:["咔滋開場","酥酥集合","炸點樂子","脆口時刻","一口開心","酥醒時分"],
+    rice:["飯點集合","米好時光","開飯提案","一口飯香","今天吃飯","飯好心情"],
+    noodle:["麵面到味","吸溜時刻","一碗相逢","麵好日子","好麵見","碗裡相見"],
+    drink:["一口歇歇","喝點心情","杯裡相見","飲點樂子","好喝時光","飲好一天"],
+    sweet:["甜點時刻","一口小甜","甜好心情","甜點相逢","甜入日子","好甜一下"],
+    other:["一口相見","好食提案","食刻到了","吃點心情","這口剛好","好味相逢"]
   };
   const group = c => /雞排|炸|鹽酥|鹹酥|薯條|漢堡/.test(c)?"fry":/飯|便當|丼|咖哩|炊/.test(c)?"rice":/麵|餃|鍋貼|拉麵/.test(c)?"noodle":/茶|咖啡|果汁|手搖/.test(c)?"drink":/甜|蛋糕|餅|豆花|冰|布丁/.test(c)?"sweet":"other";
 
   const splitItems = s => s.split(/[、,，\/\n;；\s]+/).map(t=>t.trim()).filter(Boolean);
-  const findCat = text => CATS.find(c => text.includes(c));
+  const findCat = text => ["炒飯","蔥油餅","粥",...CATS].find(c => text.includes(c));
   const len = s => [...s.replace(/\s/g,"")].length;
 
   function localCheck(name){
     const r = [];
     const hitBan = BANNED.filter(b => name.includes(b));
     if (hitBan.length) r.push("含高風險用語：" + hitBan.join("、"));
-    if (len(name) > 14) r.push("超過 14 字，列表會被截斷");
-    if (/[★☆｜|＆&♥❤]{1,}.*[★☆｜|＆&♥❤]/.test(name)) r.push("符號過多，看起來像廣告");
+    if ((!/[a-z]/i.test(name) && len(name) > 16) || len(name) > 28) r.push("名稱較長，請確認實際版位顯示");
+    if ((name.match(/丨/g)||[]).length > 1 || /[★☆｜|♥❤]/.test(name)) r.push("建議精簡分隔與裝飾符號");
     return r;
   }
 
@@ -218,19 +245,12 @@ details.more summary{cursor:pointer;color:var(--sub);font-size:14px}
     const primary = findCat(d.hero) || findCat(d.items) || items[0] || d.hero;
     const second = items.map(i => findCat(i) || i).find(c => c && c !== primary && !primary.includes(c) && !c.includes(primary)) || "";
     const g = group(primary);
-    const mods = MOD[g];
-    const pick = arr => arr[(round) % arr.length];
-    const base = d.orig.replace(/\s/g,"");
-    const origHas = base.includes(primary);
-    const first = [...base][0] || "阿";
-    const heroShort = d.hero.replace(/\s/g,"");
-    const names = [
-      { direction:"原名延伸", name: origHas ? base : base + " " + primary, keywords:[primary], reason:"保住既有熟客的辨識度，同時補上品類詞吃搜尋。" },
-      { direction:"搜尋直球", name: heroShort.length <= 8 ? heroShort + "專門店" : pick(mods) + primary + "專門店", keywords:[primary].concat(heroShort.length<=8?[heroShort]:[]), reason:"主打品直接當店名，搜尋主力品項時命中率最高。" },
-      { direction:"做法記憶", name: pick(mods) + primary + (second ? "・" + second : ""), keywords:[primary, second].filter(Boolean), reason:"用做法詞傳遞價值，順帶覆蓋第二品類。" },
-      { direction:"好唸好傳", name: first + "記" + primary, keywords:[primary], reason:"「X記」結構短、好唸，適合口耳相傳與熟客回購。" },
-      { direction:"質感取向", name: ["小火","一鍋","日常","慢慢"][round % 4] + primary + "食堂", keywords:[primary], reason:"意象詞＋食堂，拉高質感，適合中價以上。" }
-    ];
+    const excluded = [d.orig, ...splitItems(d.avoid)].filter(Boolean);
+    const stems = BRAND_IDEAS[g].filter(brand => !excluded.some(word => brand.includes(word) || word.includes(brand)));
+    const names = stems.map((_, i) => stems[(i + round) % stems.length]).slice(0,5).map(brand => ({
+      direction:"規則草稿", brand, name:brand + "丨" + primary, keywords:[primary],
+      reason:"僅作發想起點，尚未經 AI 比較篩選。"
+    }));
     return {
       keywords:{ primary:[primary], secondary: second?[second]:[], longtail: items.filter(i=>i!==primary && i!==second).slice(0,4) },
       names: names.map(n => ({ ...n, risk:"", intro:"" })),
@@ -238,56 +258,16 @@ details.more summary{cursor:pointer;color:var(--sub);font-size:14px}
     };
   }
 
-  // ---------- AI 提示 ----------
-  function buildPrompt(d){
-    return `你是台灣外送平台（Uber Eats）店名顧問。請依規則為店家產出剛好 5 個平台店名。
-
-【Uber Eats 運作重點】
-- 店名與菜單品項應清楚描述品類，幫助顧客辨識並符合搜尋意圖；不要宣稱平台已公開搜尋欄位的精確權重。
-- 平台曝光與排序是動態且個人化的，可能受點閱與下單、距離、評分、備餐與配送時間、履約品質、熱門度、優惠及廣告等因素影響。
-- 店名主要改善辨識、搜尋關聯與點擊意願，不保證提升排序。
-- 不同裝置與版位顯示長度不同，店名前段要先講清楚賣什麼。
-
-【命名規則】
-- 骨架＝品類關鍵字（必進店名）＋一個記憶元件（人格／做法規格／地名場景／意象詞／數字，擇一）。
-- 一般「記憶元件＋品類詞」；冷門品類把品類詞提前。
-- 中文 6–12 字為主，最多 14 字。店名最多 1 個品類詞＋1 個修飾詞，不堆疊關鍵字。
-- 既有實體店優先「原名＋品類詞」的低風險延伸。
-- 禁用：第一、最強、最好吃、冠軍、保證、必吃、正宗、療效暗示、知名品牌名或諧音、生僻字、連續符號。
-- 若為虛擬品牌／同址副牌，名字要反映不同定位，不能只是原名換字。
-- 長尾詞（具體口味、套餐）留給菜單品項名。
-
-【5 個店名的方向，依序各一個】
-1. 原名延伸：原店名＋品類詞（若原名已含品類詞就微調）
-2. 搜尋直球：關鍵字覆蓋最大化
-3. 做法／規格記憶：現炸、厚切、大盛這類
-4. 好唸好傳：人格或數字元件
-5. 質感取向：意象詞，支撐較高客單
-
-【店家資料】
-原店名：${d.orig}
-販售品項：${d.items}
-主打商品：${d.hero}
-客單價帶：${d.price || "未指定"}
-商圈／客群：${d.area || "未指定"}
-店家狀態：${d.type}
-避開：${d.avoid || "無"}
-${round > 0 ? `\n這是第 ${round + 1} 批，請給和先前不同的新名字。先前給過：${(current?.names||[]).map(n=>n.name).join("、")}` : ""}
-
-只回傳一個 JSON 物件，不要任何其他文字：
-{"keywords":{"primary":["必進店名的主關鍵字"],"secondary":["次關鍵字"],"longtail":["放菜單的長尾詞"]},
- "names":[{"direction":"方向名稱","name":"店名","keywords":["店名中覆蓋到的關鍵字，必須是店名裡實際出現的字串"],"reason":"30 字內，為什麼這樣取","risk":"撞名、商標或截斷等風險，沒有就空字串","intro":"建議店家簡介，30 字內"}]}
-names 必須剛好 5 筆，繁體中文，語氣務實不浮誇。`;
-  }
-
   // ---------- 渲染 ----------
   const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   function highlight(name, kws){
-    let html = esc(name);
-    [...new Set(kws||[])].filter(k=>k && name.includes(k)).sort((a,b)=>b.length-a.length).forEach(k=>{
-      const ek = esc(k);
-      if (!html.includes("<mark>"+ek)) html = html.split(ek).join("<mark>"+ek+"</mark>");
-    });
+    const words = [...new Set(kws||[])].filter(k=>k && name.includes(k)).sort((a,b)=>b.length-a.length);
+    let html = "", at = 0;
+    while(at < name.length){
+      const word = words.find(k => name.startsWith(k, at));
+      if(word){ html += "<mark>" + esc(word) + "</mark>"; at += word.length; }
+      else { html += esc(name[at]); at++; }
+    }
     return html;
   }
 
@@ -313,12 +293,12 @@ names 必須剛好 5 筆，繁體中文，語氣務實不浮誇。`;
           </div>
           <button class="btn copy" type="button" data-i="${i}" aria-label="複製 ${esc(n.name)}">複製</button>
         </div>
-        <div class="preview"><span class="lbl">列表顯示</span><div class="phone">${esc(n.name)}</div></div>
+        <div class="preview"><span class="lbl">列表示意</span><div class="phone">${esc(n.name)}</div></div>
         <dl class="meta">
-          <dt>字數</dt><dd>${len(n.name)} 字</dd>
+          <dt>字元數</dt><dd>${len(n.name)}（不含空白，含英文字母與分隔符）</dd>
           <dt>命名邏輯</dt><dd>${esc(n.reason)}</dd>
           ${n.intro ? `<dt>店家簡介</dt><dd>${esc(n.intro)}</dd>` : ""}
-          <dt>風險</dt><dd class="risk ${risks.length?"":"none"}">${risks.length ? esc(risks.join("；")) : "無明顯風險（仍需查同名與商標）"}</dd>
+          <dt>待確認</dt><dd class="risk ${risks.length?"":"none"}">${risks.length ? esc(risks.join("；")) : "仍需查核同名與商標"}</dd>
         </dl>`;
       out.appendChild(el);
     });
@@ -364,7 +344,7 @@ names 必須剛好 5 筆，繁體中文，語氣務實不浮誇。`;
   async function callWorker(d, signal){
     const res = await fetch(WORKER_URL, {
       method:"POST", headers:{"Content-Type":"application/json"}, signal,
-      body: JSON.stringify({ ...d, previous: round > 0 ? (current?.names||[]).map(n=>n.name) : [] })
+      body: JSON.stringify({ ...d, previous: history.slice(-30) })
     });
     let body = null; try { body = await res.json(); } catch {}
     if (!res.ok) throw { code: body?.error || "worker_error" };
@@ -372,14 +352,14 @@ names 必須剛好 5 筆，繁體中文，語氣務實不浮誇。`;
   }
 
   const errCopy = {
-    not_granted:"未允許使用 AI，改用規則版。",
     rate_limited:"請求太頻繁，稍等一下再按。",
     cancelled:"已停止。",
     forbidden_origin:"此網址未被授權使用 AI，先給你規則版。"
   };
   function readForm(){
     return { orig:$("orig").value.trim(), items:$("items").value.trim(), hero:$("hero").value.trim(),
-             price:$("price").value, area:$("area").value.trim(), type:$("type").value, avoid:$("avoid").value.trim() };
+             price:$("price").value, area:$("area").value.trim(), type:$("type").value, avoid:$("avoid").value.trim(),
+             namingMode:$("namingMode").value, language:$("language").value, style:$("style").value.trim(), features:$("features").value.trim() };
   }
   function valid(res){
     return res && Array.isArray(res.names) && res.names.length >= 5 && res.names.every(n => n && typeof n.name === "string" && n.name.trim());
@@ -387,46 +367,48 @@ names 必須剛好 5 筆，繁體中文，語氣務實不浮誇。`;
 
   async function run(){
     const d = readForm();
-    if (!d.orig || !d.items || !d.hero){ statusEl.textContent = "原店名、販售品項、主打商品都要填。"; return; }
+    if (!d.items || !d.hero || (d.namingMode === "extend" && !d.orig)){ statusEl.textContent = "請填販售品項與主打商品；延伸原品牌時才需填原店名。"; return; }
+    const inputKey = JSON.stringify(d);
+    if(inputKey !== lastInput){ history = []; round = 0; lastInput = inputKey; }
     const useWorker = !!WORKER_URL;
-    if (!sampleFn && !useWorker){
+    if (!useWorker){
       render(localGenerate(d));
-      statusEl.textContent = "已產生。黃底是店名裡命中的搜尋關鍵字。";
+      statusEl.textContent = "未設定 AI 後端，目前僅顯示規則草稿。";
       return;
     }
     ctl = new AbortController();
-    goBtn.disabled = true; againBtn.disabled = true; stopBtn.disabled = false;
-    statusEl.textContent = "分析關鍵字、產生店名中，約 10–40 秒…";
+    goBtn.disabled = true; againBtn.disabled = true; stopBtn.disabled = false; copyAllBtn.disabled = true;
+    statusEl.textContent = "正在構思新品牌、比較候選並篩選 5 個提案…";
     try {
-      const res = useWorker ? await callWorker(d, ctl.signal)
-                             : await sampleFn.json(buildPrompt(d), { signal: ctl.signal, cache: false });
+      const res = await callWorker(d, ctl.signal);
       if (!valid(res)) throw { code:"bad_output" };
       render(res);
-      statusEl.textContent = "完成。黃底是店名裡命中的搜尋關鍵字。";
+      history = [...history, ...res.names.map(n=>n.name)].slice(-30);
+      statusEl.textContent = "GPT‑5.4 mini 已完成 5 個提案，依推薦程度排列。黃底僅標示商品詞。";
     } catch (e) {
       if ((e && e.code === "cancelled") || (e && e.name === "AbortError")){ statusEl.textContent = errCopy.cancelled; }
-      else {
-        if (e && e.code === "not_granted") sampleFn = null;
+      else if (["quality_rejected","bad_output","incomplete_output","refused"].includes(e?.code)) {
+        current = null; out.innerHTML = ""; kwEl.hidden = true;
+        statusEl.textContent = "這批提案未通過檢查，已攔下未顯示。請再產生一次，或補充品牌風格與真實特色。";
+      } else {
         render(localGenerate(d));
         statusEl.textContent = (e && errCopy[e.code]) || "AI 暫時無法使用，先給你規則版。";
       }
     } finally {
-      goBtn.disabled = false; stopBtn.disabled = true; if (current) againBtn.disabled = false;
+      goBtn.disabled = false; stopBtn.disabled = true; againBtn.disabled = !current; copyAllBtn.disabled = !current;
     }
   }
 
-  form.addEventListener("submit", e => { e.preventDefault(); round = 0; run(); });
+  form.addEventListener("submit", e => { e.preventDefault(); run(); });
   againBtn.addEventListener("click", () => { round++; run(); });
   stopBtn.addEventListener("click", () => ctl?.abort());
 
-  // ---------- 取得 AI 能力 ----------
-  (async () => {
-    try {
-      if (window.claude && typeof window.claude.use === "function"){
-        sampleFn = await window.claude.use("sample");
-      }
-    } catch { sampleFn = null; }
-  })();
+  $("namingMode").addEventListener("change", () => {
+    const extend = $("namingMode").value === "extend";
+    $("orig").required = extend;
+    $("origHint").textContent = extend ? "延伸原品牌時必填" : "選填，只用來避開相似名字";
+    if(extend) $("orig").closest("details").open = true;
+  });
 })();
 </script>
 </body>
