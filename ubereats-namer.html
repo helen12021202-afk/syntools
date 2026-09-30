@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Uber Eats 店名產生器｜外送+</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EEF1F4; --panel:#FFFFFF; --ink:#18212B; --sub:#5B6673; --line:#D6DCE3;
+  --accent:#3438C8; --accent-ink:#FFFFFF; --mark:#FFE08A; --warn:#B4531A; --ok:#1F7A4D;
+  --field:#F7F9FB;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#12161C; --panel:#1B2129; --ink:#E8ECF1; --sub:#9AA5B2; --line:#2E3742;
+    --accent:#8C90FF; --accent-ink:#12161C; --mark:#6B5510; --warn:#F0A06A; --ok:#6FD3A0; --field:#151A21;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#12161C; --panel:#1B2129; --ink:#E8ECF1; --sub:#9AA5B2; --line:#2E3742;
+  --accent:#8C90FF; --accent-ink:#12161C; --mark:#6B5510; --warn:#F0A06A; --ok:#6FD3A0; --field:#151A21;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;font-size:16px;line-height:1.6}
+.wrap{max-width:1120px;margin:0 auto;padding:28px 20px 48px}
+header h1{font-size:clamp(26px,4vw,36px);font-weight:900;margin:0;letter-spacing:.01em}
+header p{margin:6px 0 0;color:var(--sub);max-width:60ch}
+.grid{display:grid;grid-template-columns:minmax(0,380px) minmax(0,1fr);gap:24px;margin-top:24px;align-items:start}
+@media (max-width:860px){.grid{grid-template-columns:1fr}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px}
+form .panel{position:sticky;top:calc(16px + env(safe-area-inset-top,0px))}
+@media (max-width:860px){form .panel{position:static}}
+label{display:block;font-weight:700;font-size:15px;margin:0 0 6px}
+label small{font-weight:400;color:var(--sub);margin-left:6px}
+.field{margin-bottom:16px}
+input,textarea,select{width:100%;font:inherit;color:var(--ink);background:var(--field);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+textarea{resize:vertical;min-height:72px}
+input:focus,textarea:focus,select:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+details.more{margin:4px 0 16px}
+details.more summary{cursor:pointer;color:var(--sub);font-size:14px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.btn{font:inherit;font-weight:700;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:9px 14px;cursor:pointer}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);width:100%;padding:12px;font-size:17px}
+.status{font-size:14px;color:var(--sub);margin-top:10px;min-height:1.6em}
+.results-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.results-head h2{margin:0;font-size:20px}
+.empty{color:var(--sub);padding:36px 12px;text-align:center}
+.kw{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:14px;color:var(--sub);margin-bottom:16px}
+.kw b{color:var(--ink);font-weight:700}
+.card{border:1px solid var(--line);border-radius:12px;padding:16px 16px 14px;margin-bottom:14px;background:var(--panel)}
+.card-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.dir{font-size:13px;color:var(--accent);font-weight:700}
+.name{font-size:clamp(22px,3vw,28px);font-weight:900;line-height:1.3;margin:2px 0 8px;word-break:break-all}
+.name mark{background:var(--mark);color:inherit;padding:0 2px;border-radius:3px}
+.copy{flex:none}
+.copy.done{color:var(--ok);border-color:var(--ok)}
+.preview{display:flex;align-items:center;gap:10px;margin:4px 0 10px}
+.preview span.lbl{font-size:12px;color:var(--sub);flex:none}
+.phone{width:15.5em;max-width:100%;background:var(--field);border:1px solid var(--line);border-radius:6px;padding:4px 8px;font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.meta{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:14px}
+.meta dt{color:var(--sub)}
+.meta dd{margin:0}
+.risk{color:var(--warn)}
+.risk.none{color:var(--ok)}
+.rules{margin-top:24px}
+.rules details{border-top:1px solid var(--line);padding:12px 0}
+.rules summary{cursor:pointer;font-weight:700}
+.rules ul{margin:8px 0 0;padding-left:1.2em;color:var(--sub)}
+.rules li{margin:4px 0}
+.note{font-size:13px;color:var(--sub);margin-top:4px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Uber Eats 店名產生器</h1>
+    <p>輸入店家資料，產出 5 個以「搜尋找得到、列表會想點」為優先的平台店名。</p>
+  </header>
+
+  <div class="grid">
+    <form id="f" autocomplete="off">
+      <div class="panel">
+        <div class="field">
+          <label for="orig">原店名</label>
+          <input id="orig" required placeholder="例：阿明小吃">
+        </div>
+        <div class="field">
+          <label for="items">販售品項 <small>用頓號或逗號分隔</small></label>
+          <textarea id="items" required placeholder="例：雞排、鹽酥雞、炸物拼盤、手搖飲"></textarea>
+        </div>
+        <div class="field">
+          <label for="hero">主打商品</label>
+          <input id="hero" required placeholder="例：現炸無骨雞排">
+        </div>
+        <details class="more">
+          <summary>補充條件（選填，能讓店名更精準）</summary>
+          <div class="field" style="margin-top:12px">
+            <label for="price">客單價帶</label>
+            <select id="price">
+              <option value="">未指定</option>
+              <option>銅板價（150 以下）</option>
+              <option>平價（150–300）</option>
+              <option>中價（300–500）</option>
+              <option>中高價（500 以上）</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="area">商圈／主客群</label>
+            <input id="area" placeholder="例：公館學生、內湖上班族">
+          </div>
+          <div class="field">
+            <label for="type">店家狀態</label>
+            <select id="type">
+              <option value="既有實體店">既有實體店（延伸原名）</option>
+              <option value="新開外送店">新開外送店</option>
+              <option value="虛擬品牌／同址副牌">虛擬品牌／同址副牌</option>
+            </select>
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <label for="avoid">避開的字或競品店名</label>
+            <input id="avoid" placeholder="例：同商圈有「炸雞大王」">
+          </div>
+        </details>
+        <button class="btn primary" id="go" type="submit">產生 5 個店名</button>
+        <div class="row2">
+          <button class="btn" id="stop" type="button" disabled>停止</button>
+          <button class="btn" id="again" type="button" disabled>換一批</button>
+        </div>
+        <div class="status" id="status" role="status" aria-live="polite"></div>
+      </div>
+    </form>
+
+    <section>
+      <div class="panel">
+        <div class="results-head">
+          <h2>店名提案</h2>
+          <button class="btn" id="copyAll" type="button" disabled>複製全部</button>
+        </div>
+        <div id="kw" class="kw" hidden></div>
+        <div id="out"><div class="empty">填好左邊三個欄位，按「產生 5 個店名」。</div></div>
+      </div>
+
+      <div class="panel rules">
+        <details open>
+          <summary>Uber Eats 演算法：店名管什麼、不管什麼</summary>
+          <ul>
+            <li>店名與菜單品項應清楚描述品類，幫助顧客快速辨識，也更符合「炸雞」「便當」等搜尋意圖。</li>
+            <li>Uber 官方說明，店家曝光與排序會依顧客而異，可能受點閱與下單、距離、評分、備餐與配送時間、履約品質、熱門度、優惠及廣告等因素影響。</li>
+            <li>結論：店名主要改善辨識、搜尋關聯與點擊意願，不保證提升名次；長期曝光仍仰賴商品與營運表現。</li>
+            <li>不同裝置與版位顯示長度不同，店名前段要先把「賣什麼」講清楚。</li>
+          </ul>
+        </details>
+        <details>
+          <summary>參考的取名規則（台灣外送常見結構）</summary>
+          <ul>
+            <li>骨架＝品類關鍵字＋一個記憶元件。記憶元件擇一：人格（阿明、老王）、做法規格（現炸、厚切、大盛）、地名場景（公館、深夜）、意象詞（小火、一鍋）、數字（三兄弟、九號）。</li>
+            <li>一般排「記憶元件＋品類詞」；冷門或需教育市場的品類（舒肥、韓式炸醬）品類詞提前。</li>
+            <li>中文 6–12 字為主，超過 14 字視為會被截斷。</li>
+            <li>既有店家改名優先用「原名＋品類詞」，保住既有回購辨識。</li>
+            <li>長尾字（起司雞排、雙人餐、小辣）放菜單品項名，不要擠店名。</li>
+          </ul>
+        </details>
+        <details>
+          <summary>合規紅線</summary>
+          <ul>
+            <li>不用「第一、最強、最好吃、冠軍、保證、必吃」等誇大用語。</li>
+            <li>不蹭知名品牌（含諧音、加字）。</li>
+            <li>不堆疊品類詞、不連用 ★｜＆ 等符號。</li>
+            <li>虛擬品牌／同址多品牌：菜單與定位要真的不同，平台曾大量下架重複的虛擬品牌；實際門檻以平台窗口說法為準。</li>
+            <li>定案前在 App 內搜尋同名，並查經濟部商工登記與 TIPO 商標。</li>
+          </ul>
+        </details>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const form = $("f"), goBtn = $("go"), stopBtn = $("stop"), againBtn = $("again"),
+        copyAllBtn = $("copyAll"), statusEl = $("status"), out = $("out"), kwEl = $("kw");
+  // ▼ 部署 Worker 後，把網址貼在這裡（例：https://ubereats-namer.xxx.workers.dev）
+  const WORKER_URL = "";
+  let sampleFn = null, ctl = null, current = null, round = 0;
+
+  // ---------- 本地規則（AI 無法使用時的備援，也用來複檢 AI 結果） ----------
+  const CATS = ["無骨雞排","鹽酥雞","鹹酥雞","雞排","炸雞","便當","飯盒","燴飯","咖哩飯","咖哩","丼飯","燒肉飯","雞腿飯","排骨飯","滷肉飯","油飯","拉麵","牛肉麵","烏龍麵","義大利麵","乾麵","麻醬麵","炒麵","涼麵","麵線","水餃","鍋貼","漢堡","薯條","火鍋","個人鍋","麻辣鍋","雞湯","早午餐","早餐","蛋餅","吐司","蘿蔔糕","貝果","三明治","鐵板麵","沙拉","健身餐","輕食","蔬食","素食","甜點","蛋糕","可麗餅","鬆餅","車輪餅","豆花","剉冰","布丁","手搖","鮮奶茶","水果茶","咖啡","果汁","熱炒","燒烤","串燒","滷味","鹽水雞","炊飯","小麵","麵"];
+  const BANNED = ["第一","最強","最好吃","冠軍","保證","必吃","正宗","第1","No.1","NO.1","排毒","瘦身","抗癌"];
+  const MOD = {
+    fry:["現炸","酥脆","大塊"], rice:["大盛","現煮","家常"], noodle:["手工","慢燉","濃湯"],
+    drink:["現萃","鮮搖","手作"], sweet:["手作","現烤","日日"], other:["現做","職人","家常"]
+  };
+  const group = c => /雞排|炸|鹽酥|鹹酥|薯條|漢堡/.test(c)?"fry":/飯|便當|丼|咖哩|炊/.test(c)?"rice":/麵|餃|鍋貼|拉麵/.test(c)?"noodle":/茶|咖啡|果汁|手搖/.test(c)?"drink":/甜|蛋糕|餅|豆花|冰|布丁/.test(c)?"sweet":"other";
+
+  const splitItems = s => s.split(/[、,，\/\n;；\s]+/).map(t=>t.trim()).filter(Boolean);
+  const findCat = text => CATS.find(c => text.includes(c));
+  const len = s => [...s.replace(/\s/g,"")].length;
+
+  function localCheck(name){
+    const r = [];
+    const hitBan = BANNED.filter(b => name.includes(b));
+    if (hitBan.length) r.push("含高風險用語：" + hitBan.join("、"));
+    if (len(name) > 14) r.push("超過 14 字，列表會被截斷");
+    if (/[★☆｜|＆&♥❤]{1,}.*[★☆｜|＆&♥❤]/.test(name)) r.push("符號過多，看起來像廣告");
+    return r;
+  }
+
+  function localGenerate(d){
+    const items = splitItems(d.items);
+    const primary = findCat(d.hero) || findCat(d.items) || items[0] || d.hero;
+    const second = items.map(i => findCat(i) || i).find(c => c && c !== primary && !primary.includes(c) && !c.includes(primary)) || "";
+    const g = group(primary);
+    const mods = MOD[g];
+    const pick = arr => arr[(round) % arr.length];
+    const base = d.orig.replace(/\s/g,"");
+    const origHas = base.includes(primary);
+    const first = [...base][0] || "阿";
+    const heroShort = d.hero.replace(/\s/g,"");
+    const names = [
+      { direction:"原名延伸", name: origHas ? base : base + " " + primary, keywords:[primary], reason:"保住既有熟客的辨識度，同時補上品類詞吃搜尋。" },
+      { direction:"搜尋直球", name: heroShort.length <= 8 ? heroShort + "專門店" : pick(mods) + primary + "專門店", keywords:[primary].concat(heroShort.length<=8?[heroShort]:[]), reason:"主打品直接當店名，搜尋主力品項時命中率最高。" },
+      { direction:"做法記憶", name: pick(mods) + primary + (second ? "・" + second : ""), keywords:[primary, second].filter(Boolean), reason:"用做法詞傳遞價值，順帶覆蓋第二品類。" },
+      { direction:"好唸好傳", name: first + "記" + primary, keywords:[primary], reason:"「X記」結構短、好唸，適合口耳相傳與熟客回購。" },
+      { direction:"質感取向", name: ["小火","一鍋","日常","慢慢"][round % 4] + primary + "食堂", keywords:[primary], reason:"意象詞＋食堂，拉高質感，適合中價以上。" }
+    ];
+    return {
+      keywords:{ primary:[primary], secondary: second?[second]:[], longtail: items.filter(i=>i!==primary && i!==second).slice(0,4) },
+      names: names.map(n => ({ ...n, risk:"", intro:"" })),
+      offline:true
+    };
+  }
+
+  // ---------- AI 提示 ----------
+  function buildPrompt(d){
+    return `你是台灣外送平台（Uber Eats）店名顧問。請依規則為店家產出剛好 5 個平台店名。
+
+【Uber Eats 運作重點】
+- 店名與菜單品項應清楚描述品類，幫助顧客辨識並符合搜尋意圖；不要宣稱平台已公開搜尋欄位的精確權重。
+- 平台曝光與排序是動態且個人化的，可能受點閱與下單、距離、評分、備餐與配送時間、履約品質、熱門度、優惠及廣告等因素影響。
+- 店名主要改善辨識、搜尋關聯與點擊意願，不保證提升排序。
+- 不同裝置與版位顯示長度不同，店名前段要先講清楚賣什麼。
+
+【命名規則】
+- 骨架＝品類關鍵字（必進店名）＋一個記憶元件（人格／做法規格／地名場景／意象詞／數字，擇一）。
+- 一般「記憶元件＋品類詞」；冷門品類把品類詞提前。
+- 中文 6–12 字為主，最多 14 字。店名最多 1 個品類詞＋1 個修飾詞，不堆疊關鍵字。
+- 既有實體店優先「原名＋品類詞」的低風險延伸。
+- 禁用：第一、最強、最好吃、冠軍、保證、必吃、正宗、療效暗示、知名品牌名或諧音、生僻字、連續符號。
+- 若為虛擬品牌／同址副牌，名字要反映不同定位，不能只是原名換字。
+- 長尾詞（具體口味、套餐）留給菜單品項名。
+
+【5 個店名的方向，依序各一個】
+1. 原名延伸：原店名＋品類詞（若原名已含品類詞就微調）
+2. 搜尋直球：關鍵字覆蓋最大化
+3. 做法／規格記憶：現炸、厚切、大盛這類
+4. 好唸好傳：人格或數字元件
+5. 質感取向：意象詞，支撐較高客單
+
+【店家資料】
+原店名：${d.orig}
+販售品項：${d.items}
+主打商品：${d.hero}
+客單價帶：${d.price || "未指定"}
+商圈／客群：${d.area || "未指定"}
+店家狀態：${d.type}
+避開：${d.avoid || "無"}
+${round > 0 ? `\n這是第 ${round + 1} 批，請給和先前不同的新名字。先前給過：${(current?.names||[]).map(n=>n.name).join("、")}` : ""}
+
+只回傳一個 JSON 物件，不要任何其他文字：
+{"keywords":{"primary":["必進店名的主關鍵字"],"secondary":["次關鍵字"],"longtail":["放菜單的長尾詞"]},
+ "names":[{"direction":"方向名稱","name":"店名","keywords":["店名中覆蓋到的關鍵字，必須是店名裡實際出現的字串"],"reason":"30 字內，為什麼這樣取","risk":"撞名、商標或截斷等風險，沒有就空字串","intro":"建議店家簡介，30 字內"}]}
+names 必須剛好 5 筆，繁體中文，語氣務實不浮誇。`;
+  }
+
+  // ---------- 渲染 ----------
+  const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  function highlight(name, kws){
+    let html = esc(name);
+    [...new Set(kws||[])].filter(k=>k && name.includes(k)).sort((a,b)=>b.length-a.length).forEach(k=>{
+      const ek = esc(k);
+      if (!html.includes("<mark>"+ek)) html = html.split(ek).join("<mark>"+ek+"</mark>");
+    });
+    return html;
+  }
+
+  function render(res){
+    current = res;
+    const k = res.keywords || {};
+    kwEl.hidden = false;
+    kwEl.innerHTML =
+      `<span><b>主關鍵字</b> ${esc((k.primary||[]).join("、")||"—")}</span>` +
+      `<span><b>次關鍵字</b> ${esc((k.secondary||[]).join("、")||"—")}</span>` +
+      `<span><b>放菜單</b> ${esc((k.longtail||[]).join("、")||"—")}</span>`;
+    out.innerHTML = "";
+    res.names.slice(0,5).forEach((n, i) => {
+      const checks = localCheck(n.name);
+      const risks = [n.risk, ...checks].filter(Boolean);
+      const el = document.createElement("article");
+      el.className = "card";
+      el.innerHTML = `
+        <div class="card-top">
+          <div>
+            <div class="dir">${i+1}. ${esc(n.direction)}</div>
+            <div class="name">${highlight(n.name, n.keywords)}</div>
+          </div>
+          <button class="btn copy" type="button" data-i="${i}" aria-label="複製 ${esc(n.name)}">複製</button>
+        </div>
+        <div class="preview"><span class="lbl">列表顯示</span><div class="phone">${esc(n.name)}</div></div>
+        <dl class="meta">
+          <dt>字數</dt><dd>${len(n.name)} 字</dd>
+          <dt>命名邏輯</dt><dd>${esc(n.reason)}</dd>
+          ${n.intro ? `<dt>店家簡介</dt><dd>${esc(n.intro)}</dd>` : ""}
+          <dt>風險</dt><dd class="risk ${risks.length?"":"none"}">${risks.length ? esc(risks.join("；")) : "無明顯風險（仍需查同名與商標）"}</dd>
+        </dl>`;
+      out.appendChild(el);
+    });
+    if (res.offline){
+      const note = document.createElement("p");
+      note.className = "note";
+      note.textContent = "目前為規則版提案，定案前請再人工微調，並在 App 內搜尋同名、查核商標。";
+      out.appendChild(note);
+    }
+    copyAllBtn.disabled = false;
+    againBtn.disabled = false;
+  }
+
+  // ---------- 複製 ----------
+  async function copyText(text){
+    try { await navigator.clipboard.writeText(text); return true; }
+    catch {
+      const ta = document.createElement("textarea");
+      ta.value = text; ta.setAttribute("readonly",""); ta.style.position="fixed"; ta.style.opacity="0";
+      document.body.appendChild(ta); ta.select();
+      let ok = false; try { ok = document.execCommand("copy"); } catch {}
+      ta.remove(); return ok;
+    }
+  }
+  function flash(btn, ok, label){
+    const orig = label || btn.textContent;
+    btn.textContent = ok ? "已複製" : "複製失敗";
+    btn.classList.toggle("done", ok);
+    setTimeout(()=>{ btn.textContent = orig; btn.classList.remove("done"); }, 1400);
+  }
+  out.addEventListener("click", async e => {
+    const b = e.target.closest("button.copy"); if (!b || !current) return;
+    const n = current.names[+b.dataset.i];
+    flash(b, await copyText(n.name), "複製");
+  });
+  copyAllBtn.addEventListener("click", async () => {
+    if (!current) return;
+    const text = current.names.slice(0,5).map((n,i)=>`${i+1}. ${n.name}｜${n.direction}｜${n.reason}`).join("\n");
+    flash(copyAllBtn, await copyText(text), "複製全部");
+  });
+
+  // ---------- 產生 ----------
+  async function callWorker(d, signal){
+    const res = await fetch(WORKER_URL, {
+      method:"POST", headers:{"Content-Type":"application/json"}, signal,
+      body: JSON.stringify({ ...d, previous: round > 0 ? (current?.names||[]).map(n=>n.name) : [] })
+    });
+    let body = null; try { body = await res.json(); } catch {}
+    if (!res.ok) throw { code: body?.error || "worker_error" };
+    return body;
+  }
+
+  const errCopy = {
+    not_granted:"未允許使用 AI，改用規則版。",
+    rate_limited:"請求太頻繁，稍等一下再按。",
+    cancelled:"已停止。",
+    forbidden_origin:"此網址未被授權使用 AI，先給你規則版。"
+  };
+  function readForm(){
+    return { orig:$("orig").value.trim(), items:$("items").value.trim(), hero:$("hero").value.trim(),
+             price:$("price").value, area:$("area").value.trim(), type:$("type").value, avoid:$("avoid").value.trim() };
+  }
+  function valid(res){
+    return res && Array.isArray(res.names) && res.names.length >= 5 && res.names.every(n => n && typeof n.name === "string" && n.name.trim());
+  }
+
+  async function run(){
+    const d = readForm();
+    if (!d.orig || !d.items || !d.hero){ statusEl.textContent = "原店名、販售品項、主打商品都要填。"; return; }
+    const useWorker = !!WORKER_URL;
+    if (!sampleFn && !useWorker){
+      render(localGenerate(d));
+      statusEl.textContent = "已產生。黃底是店名裡命中的搜尋關鍵字。";
+      return;
+    }
+    ctl = new AbortController();
+    goBtn.disabled = true; againBtn.disabled = true; stopBtn.disabled = false;
+    statusEl.textContent = "分析關鍵字、產生店名中，約 10–40 秒…";
+    try {
+      const res = useWorker ? await callWorker(d, ctl.signal)
+                             : await sampleFn.json(buildPrompt(d), { signal: ctl.signal, cache: false });
+      if (!valid(res)) throw { code:"bad_output" };
+      render(res);
+      statusEl.textContent = "完成。黃底是店名裡命中的搜尋關鍵字。";
+    } catch (e) {
+      if ((e && e.code === "cancelled") || (e && e.name === "AbortError")){ statusEl.textContent = errCopy.cancelled; }
+      else {
+        if (e && e.code === "not_granted") sampleFn = null;
+        render(localGenerate(d));
+        statusEl.textContent = (e && errCopy[e.code]) || "AI 暫時無法使用，先給你規則版。";
+      }
+    } finally {
+      goBtn.disabled = false; stopBtn.disabled = true; if (current) againBtn.disabled = false;
+    }
+  }
+
+  form.addEventListener("submit", e => { e.preventDefault(); round = 0; run(); });
+  againBtn.addEventListener("click", () => { round++; run(); });
+  stopBtn.addEventListener("click", () => ctl?.abort());
+
+  // ---------- 取得 AI 能力 ----------
+  (async () => {
+    try {
+      if (window.claude && typeof window.claude.use === "function"){
+        sampleFn = await window.claude.use("sample");
+      }
+    } catch { sampleFn = null; }
+  })();
+})();
+</script>
+</body>
+</html>
