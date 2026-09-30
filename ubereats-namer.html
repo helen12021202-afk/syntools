@@ -378,13 +378,14 @@ details.more summary{cursor:pointer;color:var(--sub);font-size:14px}
     }
     ctl = new AbortController();
     goBtn.disabled = true; againBtn.disabled = true; stopBtn.disabled = false; copyAllBtn.disabled = true;
-    statusEl.textContent = "正在構思新品牌、比較候選並篩選 5 個提案…";
+    statusEl.textContent = "旗艦模型正在構思新品牌、比較候選並篩選 5 個提案，可能需要稍候…";
     try {
       const res = await callWorker(d, ctl.signal);
       if (!valid(res)) throw { code:"bad_output" };
       render(res);
       history = [...history, ...res.names.map(n=>n.name)].slice(-30);
-      statusEl.textContent = "GPT‑5.4 mini 已完成 5 個提案，依推薦程度排列。黃底僅標示商品詞。";
+      const modelLabel = { "gpt-6-astra": "GPT‑6 Astra", "gpt-5.4-mini": "GPT‑5.4 mini" }[res.model] || "AI";
+      statusEl.textContent = modelLabel + " 已完成 5 個提案，依推薦程度排列。黃底僅標示商品詞。";
     } catch (e) {
       if ((e && e.code === "cancelled") || (e && e.name === "AbortError")){ statusEl.textContent = errCopy.cancelled; }
       else if (["quality_rejected","bad_output","incomplete_output","refused"].includes(e?.code)) {
