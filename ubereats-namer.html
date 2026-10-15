@@ -83,7 +83,7 @@ details.more summary{cursor:pointer;color:var(--sub);font-size:14px}
 <div class="wrap">
   <header>
     <h1>Uber Eats 店名產生器</h1>
-    <p>為外送店面取全新品牌，AI 會依販售品項延伸副標關鍵字與描述詞，產出可直接複製的「品牌丨商品副標」。</p>
+    <p>為外送店面取全新品牌，AI 會把商品、口味與做法整理成有特色的副標，產出可直接複製的「品牌丨商品副標」。</p>
   </header>
 
   <div class="grid">
@@ -126,7 +126,7 @@ details.more summary{cursor:pointer;color:var(--sub);font-size:14px}
         </div>
         <div class="field">
           <label for="items">販售品項 <small>用頓號或逗號分隔</small></label>
-          <textarea id="items" required placeholder="例：雞排、鹽酥雞、炸物拼盤、手搖飲"></textarea>
+          <textarea id="items" required placeholder="例：無骨雞排、鹽酥雞、椒鹽薯條；或黑糖豆花、焦糖布丁"></textarea>
         </div>
         <div class="field">
           <label for="hero">主打商品</label>
@@ -134,8 +134,8 @@ details.more summary{cursor:pointer;color:var(--sub);font-size:14px}
         </div>
         <div class="field">
           <label for="features">真實特色 <small>選填，請只填確實有的</small></label>
-          <input id="features" maxlength="300" placeholder="例：蒜香口味、雞排去骨、能選辣度">
-          <p class="note">副標會自動延伸商品用字；現炸、手作等做法，請填在真實特色。</p>
+          <input id="features" maxlength="300" placeholder="例：雞排蒜香口味、雞排去骨、現點現炸">
+          <p class="note">品名盡量寫完整，特色可寫口味、食材、做法或規格。AI 會組成「蒜香無骨雞排」等商品副標；資料不足時保留實際品名。</p>
         </div>
         <details class="more">
           <summary>補充條件（選填，能讓店名更精準）</summary>
@@ -216,10 +216,10 @@ details.more summary{cursor:pointer;color:var(--sub);font-size:14px}
           <ul>
             <li>預設建立新外送品牌。原店名只供避名，不沿用、縮寫或改一個字。</li>
             <li>預設親切台味、像在地店家的品牌名，重視自然順口與長期招牌使用；可在品牌感欄填寫其他風格。五案依推薦程度排列，不硬湊口號或諧音。</li>
-            <li>用「品牌丨商品副標」呈現，只保留一個「丨」，其他標點與裝飾符號不使用。副標以空格分開，放主打及 1–2 個商品、品類或有依據的描述詞。品牌可搭配短英文。</li>
+            <li>用「品牌丨商品副標」呈現，只保留一個「丨」，其他標點與裝飾符號不使用。副標以空格分開，先放有特色的主打品名，再視需要搭配 1–2 個代表商品。品牌可搭配短英文。</li>
             <li>中文、中英混合都以精簡可讀為準。列表示意僅供比較，實際顯示依裝置與平台版位而異。</li>
             <li>料理類型引導語氣，不能取代真實販售品項，也不代表正宗、產地或認證。未入選副標的品項留給簡介或菜單。</li>
-            <li>AI 可將豆花延伸為甜品、鹽酥雞延伸為炸物，也可把已填特色組成蒜香雞排等副標；未提供的商品、做法、產地或認證不會憑空補入。</li>
+            <li>優先保留黑糖豆花、紅燒牛肉麵等完整品名，並把已填特色自然組成蒜香無骨雞排等副標，避免用「台式小吃、甜品」充數。未提供的商品、做法、產地或認證不會憑空補入。</li>
           </ul>
         </details>
         <details>
