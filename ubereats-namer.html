@@ -214,7 +214,7 @@ details.more summary{cursor:pointer;color:var(--sub);font-size:14px}
           <summary>參考的取名規則（台灣外送常見結構）</summary>
           <ul>
             <li>預設建立新外送品牌。原店名只供避名，不沿用、縮寫或改一個字。</li>
-            <li>固定交付品牌名、商品副標、完整上架店名；五案依推薦程度排列，不硬湊固定模板。</li>
+            <li>以自然、順口、適合長期當招牌的品牌名為優先。固定交付品牌名、商品副標、完整上架店名；五案依推薦程度排列，不硬湊口號或諧音。</li>
             <li>用「品牌丨主打 代表品項」呈現，只保留一個「丨」，其他標點與裝飾符號不使用。副標商品詞以空格分開，放主打及 1–2 個真實商品詞；只有單一商品時不硬湊。品牌可搭配短英文。</li>
             <li>中文、中英混合都以精簡可讀為準。列表示意僅供比較，實際顯示依裝置與平台版位而異。</li>
             <li>料理類型引導語氣，不能取代真實販售品項，也不代表正宗、產地或認證。未入選副標的品項留給簡介或菜單。</li>
@@ -242,24 +242,10 @@ details.more summary{cursor:pointer;color:var(--sub);font-size:14px}
         copyAllBtn = $("copyAll"), statusEl = $("status"), out = $("out"), kwEl = $("kw");
   // ▼ 部署 Worker 後，把網址貼在這裡（例：https://ubereats-namer.xxx.workers.dev）
   const WORKER_URL = "https://ubereats-namer.helen12021202.workers.dev";
-  let ctl = null, current = null, round = 0, history = [], lastInput = "";
+  let ctl = null, current = null, history = [], lastInput = "";
 
-  // ---------- 本地規則（AI 無法使用時的備援，也用來複檢 AI 結果） ----------
-  const CATS = ["無骨雞排","鹽酥雞","鹹酥雞","雞排","炸雞","便當","飯盒","燴飯","咖哩飯","咖哩","丼飯","燒肉飯","雞腿飯","排骨飯","滷肉飯","油飯","拉麵","牛肉麵","烏龍麵","義大利麵","乾麵","麻醬麵","炒麵","涼麵","麵線","水餃","鍋貼","漢堡","薯條","火鍋","個人鍋","麻辣鍋","雞湯","早午餐","早餐","蛋餅","吐司","蘿蔔糕","貝果","三明治","鐵板麵","沙拉","健身餐","輕食","蔬食","素食","甜點","蛋糕","可麗餅","鬆餅","車輪餅","豆花","剉冰","布丁","手搖","鮮奶茶","水果茶","咖啡","果汁","熱炒","燒烤","串燒","滷味","鹽水雞","炊飯","小麵","麵"];
+  // ---------- 本地複檢；服務不可用時請重試，不提供固定店名 ----------
   const BANNED = ["第一","最強","最好吃","冠軍","保證","必吃","正宗","第1","No.1","NO.1","排毒","瘦身","抗癌"];
-  const BRAND_IDEAS = {
-    fry:["咔滋開場","酥酥集合","炸點樂子","脆口時刻","一口開心","酥醒時分"],
-    rice:["飯點集合","米好時光","開飯提案","一口飯香","今天吃飯","飯好心情"],
-    noodle:["麵面到味","吸溜時刻","一碗相逢","麵好日子","好麵見","碗裡相見"],
-    drink:["一口歇歇","喝點心情","杯裡相見","飲點樂子","好喝時光","飲好一天"],
-    sweet:["甜點時刻","一口小甜","甜好心情","甜點相逢","甜入日子","好甜一下"],
-    other:["一口相見","好食提案","食刻到了","吃點心情","這口剛好","好味相逢"]
-  };
-  const group = c => /雞排|炸|鹽酥|鹹酥|薯條|漢堡/.test(c)?"fry":/飯|便當|丼|咖哩|炊/.test(c)?"rice":/麵|餃|鍋貼|拉麵/.test(c)?"noodle":/茶|咖啡|果汁|手搖/.test(c)?"drink":/甜|蛋糕|餅|豆花|冰|布丁/.test(c)?"sweet":"other";
-
-  const splitItems = s => s.split(/[、,，\/\n;；\s]+/).map(t=>t.trim()).filter(Boolean);
-  const findCat = text => ["炒飯","蔥油餅","粥",...CATS].find(c => text.includes(c));
-  const plainNamePart = text => text.replace(/[丨]|[^\p{L}\p{M}\p{N} ]/gu, " ").replace(/ +/g, " ").trim();
   const len = s => [...s.replace(/\s/g,"")].length;
 
   function localCheck(name){
@@ -271,23 +257,12 @@ details.more summary{cursor:pointer;color:var(--sub);font-size:14px}
     return r;
   }
 
-  function localGenerate(d){
-    const items = splitItems(d.items);
-    const primary = plainNamePart(findCat(d.hero) || findCat(d.items) || items[0] || d.hero);
-    const second = items.map(i => plainNamePart(findCat(i) || i)).find(c => c && c !== primary && !primary.includes(c) && !c.includes(primary)) || "";
-    const subtitle = [primary, second].filter(Boolean).join(" ");
-    const g = group(primary);
-    const excluded = [d.orig, ...splitItems(d.avoid)].filter(Boolean);
-    const stems = BRAND_IDEAS[g].filter(brand => !excluded.some(word => brand.includes(word) || word.includes(brand)));
-    const names = stems.map((_, i) => stems[(i + round) % stems.length]).slice(0,5).map(brand => ({
-      direction:"規則草稿", brand, subtitle, name:brand + "丨" + subtitle, keywords:[primary, second].filter(Boolean),
-      reason:"僅作發想起點，尚未經 AI 比較篩選。"
-    }));
-    return {
-      keywords:{ primary:[primary], secondary: second?[second]:[], longtail: items.filter(i=>i!==primary && i!==second).slice(0,4) },
-      names: names.map(n => ({ ...n, risk:"", intro:"" })),
-      offline:true
-    };
+  function clearResults(){
+    current = null;
+    out.innerHTML = "";
+    kwEl.hidden = true;
+    againBtn.disabled = true;
+    copyAllBtn.disabled = true;
   }
 
   // ---------- 渲染 ----------
@@ -337,12 +312,6 @@ details.more summary{cursor:pointer;color:var(--sub);font-size:14px}
         </dl>`;
       out.appendChild(el);
     });
-    if (res.offline){
-      const note = document.createElement("p");
-      note.className = "note";
-      note.textContent = "目前為規則版提案，定案前請再人工微調，並在 App 內搜尋同名、查核商標。";
-      out.appendChild(note);
-    }
     copyAllBtn.disabled = false;
     againBtn.disabled = false;
   }
@@ -389,7 +358,7 @@ details.more summary{cursor:pointer;color:var(--sub);font-size:14px}
   const errCopy = {
     rate_limited:"請求太頻繁，稍等一下再按。",
     cancelled:"已停止。",
-    forbidden_origin:"此網址未被授權使用 AI，先給你規則版。"
+    forbidden_origin:"此網址未被授權使用 AI，請從正式工具頁面開啟。"
   };
   function readForm(){
     return { orig:$("orig").value.trim(), items:$("items").value.trim(), hero:$("hero").value.trim(),
@@ -409,11 +378,11 @@ details.more summary{cursor:pointer;color:var(--sub);font-size:14px}
     if ($("cuisine").value === "custom" && !d.cuisine){ statusEl.textContent = "請填寫自訂料理類型，或選擇未指定。"; return; }
     if (!d.items || !d.hero || (d.namingMode === "extend" && !d.orig)){ statusEl.textContent = "請填販售品項與主打商品；延伸原品牌時才需填原店名。"; return; }
     const inputKey = JSON.stringify(d);
-    if(inputKey !== lastInput){ history = []; round = 0; lastInput = inputKey; }
+    if(inputKey !== lastInput){ history = []; lastInput = inputKey; }
     const useWorker = !!WORKER_URL;
     if (!useWorker){
-      render(localGenerate(d));
-      statusEl.textContent = "未設定 AI 後端，目前僅顯示規則草稿。";
+      clearResults();
+      statusEl.textContent = "命名服務尚未設定，請聯絡工具管理者。";
       return;
     }
     ctl = new AbortController();
@@ -429,11 +398,11 @@ details.more summary{cursor:pointer;color:var(--sub);font-size:14px}
     } catch (e) {
       if ((e && e.code === "cancelled") || (e && e.name === "AbortError")){ statusEl.textContent = errCopy.cancelled; }
       else if (["quality_rejected","bad_output","incomplete_output","refused"].includes(e?.code)) {
-        current = null; out.innerHTML = ""; kwEl.hidden = true;
+        clearResults();
         statusEl.textContent = "這批提案未通過檢查，已攔下未顯示。請再產生一次，或補充品牌風格與真實特色。";
       } else {
-        render(localGenerate(d));
-        statusEl.textContent = (e && errCopy[e.code]) || "AI 暫時無法使用，先給你規則版。";
+        clearResults();
+        statusEl.textContent = (e && errCopy[e.code]) || "命名服務暫時無法使用，請稍後重新產生。";
       }
     } finally {
       goBtn.disabled = false; stopBtn.disabled = true; againBtn.disabled = !current; copyAllBtn.disabled = !current;
@@ -441,7 +410,7 @@ details.more summary{cursor:pointer;color:var(--sub);font-size:14px}
   }
 
   form.addEventListener("submit", e => { e.preventDefault(); run(); });
-  againBtn.addEventListener("click", () => { round++; run(); });
+  againBtn.addEventListener("click", () => run());
   stopBtn.addEventListener("click", () => ctl?.abort());
 
   $("cuisine").addEventListener("change", () => {
